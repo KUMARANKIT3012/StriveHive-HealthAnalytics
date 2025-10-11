@@ -50,3 +50,6 @@ java programming/
 # Exclude Python notes and other personal projects
 python notes/
 projects/
+
+# Internal development files (not for production)
+backend/src/main/resources/static/.internal/

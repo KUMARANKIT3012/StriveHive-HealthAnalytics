@@ -48,8 +48,8 @@ A comprehensive health and fitness tracking application that helps users monitor
 - **Google Fonts** - Typography (Inter font family)
 
 ### Backend
-- **Java 17** - Core programming language
-- **Spring Boot 3.1.5** - Application framework
+- **Java 11+** - Core programming language
+- **Spring Boot** - Application framework
 - **Spring Data JPA** - Database abstraction layer
 - **H2 Database** - In-memory database for development
 - **MySQL** - Production database option
@@ -63,7 +63,7 @@ A comprehensive health and fitness tracking application that helps users monitor
 ## 🚀 Getting Started
 
 ### Prerequisites
-- **Java 17** or higher
+- **Java 11** or higher
 - **Maven 3.6+** or higher
 - **Modern web browser** (Chrome, Firefox, Safari, Edge)
 
@@ -95,8 +95,8 @@ mvn spring-boot:run
 ```
 
 6. **Verify backend is running:**
-   - Open http://localhost:8080 in your browser
-   - You should see a Spring Boot welcome page or H2 console
+   - Open http://localhost:8081 in your browser
+   - Backend will run on port 8081
 
 ### Frontend Setup
 
@@ -124,7 +124,7 @@ cd ../frontend
 
 ### Database Access (Development)
 
-- **H2 Console:** http://localhost:8080/h2-console
+- **H2 Console:** http://localhost:8081/h2-console
 - **JDBC URL:** `jdbc:h2:mem:strivehive`
 - **Username:** `sa`
 - **Password:** (empty)
@@ -171,7 +171,7 @@ spring.datasource.username=sa
 spring.datasource.password=
 
 # Server Configuration
-server.port=8080
+server.port=8081
 
 # For MySQL (Production)
 # spring.datasource.url=jdbc:mysql://localhost:3306/strivehive
@@ -184,7 +184,7 @@ server.port=8080
 Edit `frontend/js/api.js` to change backend URL:
 
 ```javascript
-static BASE_URL = 'http://localhost:8080/api';
+static BASE_URL = 'http://localhost:8081/api';
 ```
 
 ## 🏗️ Project Structure
