@@ -252,11 +252,15 @@ class StriveHiveApp {
                 
                 // Remove the override styles after navigation is complete
                 setTimeout(() => {
-                    if (forceHideStyle) {
+                    if (forceHideStyle && forceHideStyle.parentNode) {
                         forceHideStyle.remove();
                     }
-                    console.log('🧹 Override styles removed');
-                }, 1000);
+                    // Reset menu display so it can be opened again
+                    if (navMenu) {
+                        navMenu.style.display = '';
+                    }
+                    console.log('🧹 Override styles removed and menu reset');
+                }, 300);
             };
             
             // Add multiple event listeners for maximum compatibility
@@ -284,6 +288,13 @@ class StriveHiveApp {
                 e.stopPropagation();
                 console.log('🍔 HAMBURGER CLICKED');
                 
+                // Remove any force-hide styles first
+                const forceHideStyle = document.getElementById('force-hide-nav');
+                if (forceHideStyle) {
+                    forceHideStyle.remove();
+                    console.log('🧹 Removed force-hide styles to allow menu toggle');
+                }
+                
                 // Simple approach: if menu is open, just hide it completely
                 if (navMenu.classList.contains('active')) {
                     console.log('🍔 Menu is open, hiding it immediately');
@@ -292,7 +303,13 @@ class StriveHiveApp {
                     navMenu.classList.remove('active');
                     document.body.classList.remove('nav-open');
                     document.body.style.overflow = '';
+                    
+                    // Reset menu display after brief moment
+                    setTimeout(() => {
+                        navMenu.style.display = '';
+                    }, 100);
                 } else {
+                    console.log('🍔 Opening menu');
                     this.toggleMobileMenu();
                 }
             });
@@ -372,6 +389,13 @@ class StriveHiveApp {
         
         console.log('🍔 toggleMobileMenu called');
         
+        // Always clean up any force-hide styles first
+        const forceHideStyle = document.getElementById('force-hide-nav');
+        if (forceHideStyle) {
+            forceHideStyle.remove();
+            console.log('🧹 Cleaned up force-hide styles in toggleMobileMenu');
+        }
+        
         if (hamburger && navMenu) {
             const isActive = navMenu.classList.contains('active');
             
@@ -382,8 +406,9 @@ class StriveHiveApp {
                 console.log('🔥 Menu is active, force closing...');
                 this.forceCloseMobileMenu();
             } else {
-                // Clear any existing animation classes before opening
+                // Clear any existing animation classes and reset styles before opening
                 navMenu.classList.remove('closing', 'slideInMobile', 'slideOutMobile');
+                navMenu.style.cssText = ''; // Clear all inline styles
                 navMenu.style.animation = 'none';
                 
                 // Open menu
@@ -391,7 +416,7 @@ class StriveHiveApp {
                 navMenu.classList.add('active');
                 document.body.classList.add('nav-open');
                 
-                console.log('🍔 Menu opened');
+                console.log('🍔 Menu opened successfully');
                 
                 // Animate menu items with staggered effect
                 const menuItems = navMenu.querySelectorAll('.nav-link');
