@@ -141,40 +141,69 @@ class StriveHiveApp {
         const hamburger = document.getElementById('hamburger');
         const navMenu = document.getElementById('nav-menu');
 
-        // Set up navigation links
+        // Set up navigation links with IMMEDIATE menu close
         navLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
+            // Create a super aggressive click handler
+            const handleNavClick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                e.stopImmediatePropagation();
                 
-                console.log('Nav link clicked, forcing menu close...');
+                console.log('🔥 NAV LINK CLICKED - FORCE CLOSING MENU');
                 
-                // Force close mobile menu IMMEDIATELY on any nav click
-                this.forceCloseMobileMenu();
+                // Get elements directly each time
+                const hamburger = document.getElementById('hamburger');
+                const navMenu = document.getElementById('nav-menu');
+                const body = document.body;
                 
+                // BRUTE FORCE CLOSE - Multiple approaches at once
+                if (hamburger) {
+                    hamburger.classList.remove('active');
+                    hamburger.style.cssText = '';
+                }
+                
+                if (navMenu) {
+                    navMenu.classList.remove('active');
+                    navMenu.style.cssText = `
+                        transform: translateX(-100%) !important;
+                        left: -100% !important;
+                        opacity: 0 !important;
+                        visibility: hidden !important;
+                        display: none !important;
+                        pointer-events: none !important;
+                    `;
+                }
+                
+                if (body) {
+                    body.classList.remove('nav-open');
+                }
+                
+                console.log('🔥 MENU FORCE CLOSED');
+                
+                // Handle navigation after menu is closed
                 const targetSection = link.getAttribute('href').substring(1);
-                console.log('Navigation clicked! Target section:', targetSection);
                 
-                // Update active nav link with animation
+                // Update active nav link
                 navLinks.forEach(navLink => {
                     navLink.classList.remove('active');
-                    navLink.style.transform = 'scale(1)';
                 });
                 link.classList.add('active');
-                link.style.transform = 'scale(1.05)';
-                setTimeout(() => link.style.transform = 'scale(1)', 200);
                 
-                // Show target section with animation
+                // Navigate to section
+                this.showSection(targetSection);
+                
+                // Reset menu styles after navigation
                 setTimeout(() => {
-                    this.showSectionWithAnimation(targetSection);
-                }, 150);
-            });
+                    if (navMenu) {
+                        navMenu.style.cssText = '';
+                    }
+                }, 500);
+            };
             
-            // Add additional touch event listener for mobile reliability
-            link.addEventListener('touchend', (e) => {
-                console.log('Touch end on nav link, closing menu...');
-                this.forceCloseMobileMenu();
-            });
+            // Add multiple event listeners for maximum compatibility
+            link.addEventListener('click', handleNavClick, true); // Use capture phase
+            link.addEventListener('touchstart', handleNavClick, true);
+            link.addEventListener('touchend', handleNavClick, true);
 
             // Add hover effects
             link.addEventListener('mouseenter', () => {
@@ -194,8 +223,38 @@ class StriveHiveApp {
         if (hamburger && navMenu) {
             hamburger.addEventListener('click', (e) => {
                 e.stopPropagation();
+                console.log('🍔 HAMBURGER CLICKED');
                 this.toggleMobileMenu();
             });
+            
+            // Add global click handler to close menu on ANY click outside
+            document.addEventListener('click', (e) => {
+                if (navMenu.classList.contains('active')) {
+                    console.log('🌍 GLOBAL CLICK - Checking if should close menu');
+                    const isNavMenu = e.target.closest('#nav-menu');
+                    const isHamburger = e.target.closest('#hamburger');
+                    
+                    if (!isNavMenu && !isHamburger) {
+                        console.log('🔥 GLOBAL CLICK - CLOSING MENU');
+                        this.forceCloseMobileMenu();
+                    }
+                }
+            });
+            
+            // Special mobile-only handler
+            if (window.innerWidth <= 768) {
+                document.addEventListener('touchstart', (e) => {
+                    if (navMenu.classList.contains('active')) {
+                        const isNavMenu = e.target.closest('#nav-menu');
+                        const isHamburger = e.target.closest('#hamburger');
+                        
+                        if (!isNavMenu && !isHamburger) {
+                            console.log('📱 MOBILE TOUCH - CLOSING MENU');
+                            this.forceCloseMobileMenu();
+                        }
+                    }
+                });
+            }
 
             // Close mobile menu when clicking outside
             document.addEventListener('click', (e) => {
