@@ -156,14 +156,14 @@ class StriveHiveApp {
                 const navMenu = document.getElementById('nav-menu');
                 const body = document.body;
                 
-                // BRUTE FORCE CLOSE - Multiple approaches at once
+                // NUCLEAR OPTION - Force remove ALL nav classes and reset body
                 if (hamburger) {
-                    hamburger.classList.remove('active');
+                    hamburger.className = hamburger.className.replace(/active/g, '');
                     hamburger.style.cssText = '';
                 }
                 
                 if (navMenu) {
-                    navMenu.classList.remove('active');
+                    navMenu.className = navMenu.className.replace(/active/g, '');
                     navMenu.style.cssText = `
                         transform: translateX(-100%) !important;
                         left: -100% !important;
@@ -171,14 +171,38 @@ class StriveHiveApp {
                         visibility: hidden !important;
                         display: none !important;
                         pointer-events: none !important;
+                        animation: none !important;
+                        transition: none !important;
                     `;
                 }
                 
                 if (body) {
+                    // Remove nav-open class multiple ways
                     body.classList.remove('nav-open');
+                    body.className = body.className.replace(/nav-open/g, '');
+                    body.className = body.className.replace(/\s+/g, ' ').trim();
+                    
+                    // Force reset body overflow
+                    body.style.overflow = '';
+                    body.style.position = '';
+                    body.style.width = '';
                 }
                 
-                console.log('🔥 MENU FORCE CLOSED');
+                console.log('🔥 NUCLEAR MENU CLOSE - Body classes:', body.className);
+                
+                // Aggressive cleanup loop - keep removing nav-open until it's gone
+                let cleanupAttempts = 0;
+                const cleanupInterval = setInterval(() => {
+                    cleanupAttempts++;
+                    if (body.classList.contains('nav-open') && cleanupAttempts < 10) {
+                        body.classList.remove('nav-open');
+                        body.style.overflow = '';
+                        console.log('🧹 Cleanup attempt', cleanupAttempts, '- removing persistent nav-open');
+                    } else {
+                        clearInterval(cleanupInterval);
+                        console.log('🧹 Cleanup complete after', cleanupAttempts, 'attempts');
+                    }
+                }, 50);
                 
                 // Handle navigation after menu is closed
                 const targetSection = link.getAttribute('href').substring(1);
