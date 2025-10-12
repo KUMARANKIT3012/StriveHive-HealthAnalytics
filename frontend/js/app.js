@@ -158,16 +158,13 @@ class StriveHiveApp {
                 link.style.transform = 'scale(1.05)';
                 setTimeout(() => link.style.transform = 'scale(1)', 200);
                 
-                // Close mobile menu IMMEDIATELY on mobile before showing section
-                if (window.innerWidth <= 768) {
-                    this.closeMobileMenu();
-                }
+                // Force close mobile menu IMMEDIATELY on any nav click
+                this.forceCloseMobileMenu();
                 
                 // Show target section with animation
-                this.showSectionWithAnimation(targetSection);
-                
-                // Close mobile menu after clicking (fallback)
-                this.closeMobileMenu();
+                setTimeout(() => {
+                    this.showSectionWithAnimation(targetSection);
+                }, 100);
             });
 
             // Add hover effects
@@ -191,23 +188,27 @@ class StriveHiveApp {
                 this.toggleMobileMenu();
             });
 
-            // Close mobile menu when clicking outside (use closest for reliability on mobile/touch)
+            // Close mobile menu when clicking outside
             document.addEventListener('click', (e) => {
-                const clickedInsideMenu = Boolean(e.target && e.target.closest && e.target.closest('#nav-menu'));
-                const clickedHamburger = Boolean(e.target && e.target.closest && e.target.closest('#hamburger'));
-                if (!clickedInsideMenu && !clickedHamburger) {
-                    this.closeMobileMenu();
+                if (navMenu.classList.contains('active')) {
+                    const clickedInsideMenu = e.target.closest('#nav-menu');
+                    const clickedHamburger = e.target.closest('#hamburger');
+                    if (!clickedInsideMenu && !clickedHamburger) {
+                        this.forceCloseMobileMenu();
+                    }
                 }
-            }, { passive: true });
+            });
 
-            // Also close on touchstart for better mobile responsiveness
-            document.addEventListener('touchstart', (e) => {
-                const clickedInsideMenu = Boolean(e.target && e.target.closest && e.target.closest('#nav-menu'));
-                const clickedHamburger = Boolean(e.target && e.target.closest && e.target.closest('#hamburger'));
-                if (!clickedInsideMenu && !clickedHamburger) {
-                    this.closeMobileMenu();
+            // Also close on touchstart for mobile
+            document.addEventListener('touchend', (e) => {
+                if (navMenu.classList.contains('active')) {
+                    const clickedInsideMenu = e.target.closest('#nav-menu');
+                    const clickedHamburger = e.target.closest('#hamburger'); 
+                    if (!clickedInsideMenu && !clickedHamburger) {
+                        this.forceCloseMobileMenu();
+                    }
                 }
-            }, { passive: true });
+            });
 
             // Close mobile menu on window resize
             window.addEventListener('resize', () => {
@@ -288,16 +289,24 @@ class StriveHiveApp {
         }
     }
 
-    // Close mobile menu (simplified for external calls)
-    closeMobileMenu() {
+    // Force close mobile menu immediately (no animations)
+    forceCloseMobileMenu() {
         const hamburger = document.getElementById('hamburger');
         const navMenu = document.getElementById('nav-menu');
         
         if (hamburger && navMenu) {
-            // Force close immediately
+            // Remove all classes immediately
             hamburger.classList.remove('active');
             navMenu.classList.remove('active');
             document.body.classList.remove('nav-open');
+            
+            // Force display none to hide immediately
+            navMenu.style.display = 'none';
+            
+            // Reset display after a brief moment
+            setTimeout(() => {
+                navMenu.style.display = '';
+            }, 50);
             
             // Reset any menu item animations
             const menuItems = navMenu.querySelectorAll('.nav-link');
@@ -307,6 +316,11 @@ class StriveHiveApp {
                 item.style.transition = '';
             });
         }
+    }
+
+    // Close mobile menu (simplified for external calls)
+    closeMobileMenu() {
+        this.forceCloseMobileMenu();
     }
 
     // Add interactive button animations with enhanced effects
