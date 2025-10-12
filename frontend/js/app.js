@@ -151,6 +151,38 @@ class StriveHiveApp {
                 
                 console.log('🔥 NAV LINK CLICKED - FORCE CLOSING MENU');
                 
+                // Add a CSS override style that will force hide the menu
+                let forceHideStyle = document.getElementById('force-hide-nav');
+                if (!forceHideStyle) {
+                    forceHideStyle = document.createElement('style');
+                    forceHideStyle.id = 'force-hide-nav';
+                    document.head.appendChild(forceHideStyle);
+                }
+                
+                // Inject CSS that overrides everything
+                forceHideStyle.textContent = `
+                    #nav-menu {
+                        display: none !important;
+                        visibility: hidden !important;
+                        opacity: 0 !important;
+                        transform: translateX(-100%) !important;
+                        left: -100% !important;
+                        top: -100vh !important;
+                        z-index: -9999 !important;
+                        pointer-events: none !important;
+                        animation: none !important;
+                        transition: none !important;
+                    }
+                    body {
+                        overflow: auto !important;
+                        position: static !important;
+                    }
+                    #hamburger {
+                        animation: none !important;
+                        transition: none !important;
+                    }
+                `;
+                
                 // Get elements directly each time
                 const hamburger = document.getElementById('hamburger');
                 const navMenu = document.getElementById('nav-menu');
@@ -216,12 +248,15 @@ class StriveHiveApp {
                 // Navigate to section
                 this.showSection(targetSection);
                 
-                // Reset menu styles after navigation
+                console.log('🎯 Navigation completed, menu should be hidden');
+                
+                // Remove the override styles after navigation is complete
                 setTimeout(() => {
-                    if (navMenu) {
-                        navMenu.style.cssText = '';
+                    if (forceHideStyle) {
+                        forceHideStyle.remove();
                     }
-                }, 500);
+                    console.log('🧹 Override styles removed');
+                }, 1000);
             };
             
             // Add multiple event listeners for maximum compatibility
@@ -248,7 +283,18 @@ class StriveHiveApp {
             hamburger.addEventListener('click', (e) => {
                 e.stopPropagation();
                 console.log('🍔 HAMBURGER CLICKED');
-                this.toggleMobileMenu();
+                
+                // Simple approach: if menu is open, just hide it completely
+                if (navMenu.classList.contains('active')) {
+                    console.log('🍔 Menu is open, hiding it immediately');
+                    navMenu.style.display = 'none';
+                    hamburger.classList.remove('active');
+                    navMenu.classList.remove('active');
+                    document.body.classList.remove('nav-open');
+                    document.body.style.overflow = '';
+                } else {
+                    this.toggleMobileMenu();
+                }
             });
             
             // Add global click handler to close menu on ANY click outside
