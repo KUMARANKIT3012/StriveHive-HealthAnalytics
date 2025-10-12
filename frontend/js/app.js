@@ -300,16 +300,28 @@ class StriveHiveApp {
         const hamburger = document.getElementById('hamburger');
         const navMenu = document.getElementById('nav-menu');
         
+        console.log('🍔 toggleMobileMenu called');
+        
         if (hamburger && navMenu) {
             const isActive = navMenu.classList.contains('active');
             
+            console.log('Menu is currently active:', isActive);
+            
             if (isActive) {
-                this.closeMobileMenuWithAnimation();
+                // Force close immediately instead of animation
+                console.log('🔥 Menu is active, force closing...');
+                this.forceCloseMobileMenu();
             } else {
-                // Open menu with staggered animation
+                // Clear any existing animation classes before opening
+                navMenu.classList.remove('closing', 'slideInMobile', 'slideOutMobile');
+                navMenu.style.animation = 'none';
+                
+                // Open menu
                 hamburger.classList.add('active');
                 navMenu.classList.add('active');
                 document.body.classList.add('nav-open');
+                
+                console.log('🍔 Menu opened');
                 
                 // Animate menu items with staggered effect
                 const menuItems = navMenu.querySelectorAll('.nav-link');
@@ -361,12 +373,20 @@ class StriveHiveApp {
     forceCloseMobileMenu() {
         const hamburger = document.getElementById('hamburger');
         const navMenu = document.getElementById('nav-menu');
+        const body = document.body;
+        
+        console.log('🔥 forceCloseMobileMenu called');
         
         if (hamburger && navMenu) {
-            // Remove all classes immediately
+            // Remove ALL possible conflicting classes
             hamburger.classList.remove('active');
             navMenu.classList.remove('active');
-            document.body.classList.remove('nav-open');
+            body.classList.remove('nav-open');
+            body.classList.remove('page-loaded'); // Remove page-loaded that might interfere
+            
+            // Stop any ongoing animations by removing transition classes
+            navMenu.classList.remove('slideInMobile', 'slideOutMobile');
+            hamburger.classList.remove('animate');
             
             // Force multiple CSS properties to hide menu immediately
             navMenu.style.cssText = `
@@ -375,22 +395,31 @@ class StriveHiveApp {
                 opacity: 0 !important;
                 left: -100% !important;
                 transform: translateX(-100%) !important;
+                transition: none !important;
+                animation: none !important;
+                z-index: -1 !important;
+            `;
+            
+            hamburger.style.cssText = `
+                transition: none !important;
+                animation: none !important;
             `;
             
             // Reset styles after ensuring menu is closed
             setTimeout(() => {
                 navMenu.style.cssText = '';
-            }, 100);
+                hamburger.style.cssText = '';
+                // Re-add page-loaded after menu operations are complete
+                body.classList.add('page-loaded');
+            }, 200);
             
             // Reset any menu item animations
             const menuItems = navMenu.querySelectorAll('.nav-link');
             menuItems.forEach(item => {
-                item.style.opacity = '';
-                item.style.transform = '';
-                item.style.transition = '';
+                item.style.cssText = '';
             });
             
-            console.log('Mobile menu force closed');
+            console.log('🔥 Mobile menu FORCE CLOSED with page-loaded class reset');
         }
     }
 
