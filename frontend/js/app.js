@@ -158,10 +158,15 @@ class StriveHiveApp {
                 link.style.transform = 'scale(1.05)';
                 setTimeout(() => link.style.transform = 'scale(1)', 200);
                 
+                // Close mobile menu IMMEDIATELY on mobile before showing section
+                if (window.innerWidth <= 768) {
+                    this.closeMobileMenu();
+                }
+                
                 // Show target section with animation
                 this.showSectionWithAnimation(targetSection);
                 
-                // Close mobile menu after clicking
+                // Close mobile menu after clicking (fallback)
                 this.closeMobileMenu();
             });
 
@@ -186,12 +191,23 @@ class StriveHiveApp {
                 this.toggleMobileMenu();
             });
 
-            // Close mobile menu when clicking outside
+            // Close mobile menu when clicking outside (use closest for reliability on mobile/touch)
             document.addEventListener('click', (e) => {
-                if (!navMenu.contains(e.target) && !hamburger.contains(e.target)) {
+                const clickedInsideMenu = Boolean(e.target && e.target.closest && e.target.closest('#nav-menu'));
+                const clickedHamburger = Boolean(e.target && e.target.closest && e.target.closest('#hamburger'));
+                if (!clickedInsideMenu && !clickedHamburger) {
                     this.closeMobileMenu();
                 }
-            });
+            }, { passive: true });
+
+            // Also close on touchstart for better mobile responsiveness
+            document.addEventListener('touchstart', (e) => {
+                const clickedInsideMenu = Boolean(e.target && e.target.closest && e.target.closest('#nav-menu'));
+                const clickedHamburger = Boolean(e.target && e.target.closest && e.target.closest('#hamburger'));
+                if (!clickedInsideMenu && !clickedHamburger) {
+                    this.closeMobileMenu();
+                }
+            }, { passive: true });
 
             // Close mobile menu on window resize
             window.addEventListener('resize', () => {
@@ -277,8 +293,19 @@ class StriveHiveApp {
         const hamburger = document.getElementById('hamburger');
         const navMenu = document.getElementById('nav-menu');
         
-        if (hamburger && navMenu && navMenu.classList.contains('active')) {
-            this.closeMobileMenuWithAnimation();
+        if (hamburger && navMenu) {
+            // Force close immediately
+            hamburger.classList.remove('active');
+            navMenu.classList.remove('active');
+            document.body.classList.remove('nav-open');
+            
+            // Reset any menu item animations
+            const menuItems = navMenu.querySelectorAll('.nav-link');
+            menuItems.forEach(item => {
+                item.style.opacity = '';
+                item.style.transform = '';
+                item.style.transition = '';
+            });
         }
     }
 
