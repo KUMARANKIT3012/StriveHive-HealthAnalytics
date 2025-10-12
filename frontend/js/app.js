@@ -145,6 +145,12 @@ class StriveHiveApp {
         navLinks.forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
+                
+                console.log('Nav link clicked, forcing menu close...');
+                
+                // Force close mobile menu IMMEDIATELY on any nav click
+                this.forceCloseMobileMenu();
                 
                 const targetSection = link.getAttribute('href').substring(1);
                 console.log('Navigation clicked! Target section:', targetSection);
@@ -158,13 +164,16 @@ class StriveHiveApp {
                 link.style.transform = 'scale(1.05)';
                 setTimeout(() => link.style.transform = 'scale(1)', 200);
                 
-                // Force close mobile menu IMMEDIATELY on any nav click
-                this.forceCloseMobileMenu();
-                
                 // Show target section with animation
                 setTimeout(() => {
                     this.showSectionWithAnimation(targetSection);
-                }, 100);
+                }, 150);
+            });
+            
+            // Add additional touch event listener for mobile reliability
+            link.addEventListener('touchend', (e) => {
+                console.log('Touch end on nav link, closing menu...');
+                this.forceCloseMobileMenu();
             });
 
             // Add hover effects
@@ -300,13 +309,19 @@ class StriveHiveApp {
             navMenu.classList.remove('active');
             document.body.classList.remove('nav-open');
             
-            // Force display none to hide immediately
-            navMenu.style.display = 'none';
+            // Force multiple CSS properties to hide menu immediately
+            navMenu.style.cssText = `
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                left: -100% !important;
+                transform: translateX(-100%) !important;
+            `;
             
-            // Reset display after a brief moment
+            // Reset styles after ensuring menu is closed
             setTimeout(() => {
-                navMenu.style.display = '';
-            }, 50);
+                navMenu.style.cssText = '';
+            }, 100);
             
             // Reset any menu item animations
             const menuItems = navMenu.querySelectorAll('.nav-link');
@@ -315,6 +330,8 @@ class StriveHiveApp {
                 item.style.transform = '';
                 item.style.transition = '';
             });
+            
+            console.log('Mobile menu force closed');
         }
     }
 
