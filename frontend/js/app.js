@@ -1401,12 +1401,30 @@ class StriveHiveApp {
                 this.loadNutritionData();
                 break;
             case 'reports':
+                // CRITICAL: Preserve navbar immediately when entering reports
+                this.preserveNavbar();
+                
                 // Ensure activity distribution is initialized first
                 this.initializeActivityDistribution();
+                
+                // Preserve navbar again after initialization
+                setTimeout(() => {
+                    this.preserveNavbar();
+                }, 50);
+                
                 // Then load reports data
                 setTimeout(() => {
                     this.loadReportsData();
+                    // Preserve navbar after reports data loads
+                    setTimeout(() => {
+                        this.preserveNavbar();
+                    }, 100);
                 }, 200);
+                
+                // Additional navbar preservation for reports section
+                setTimeout(() => {
+                    this.preserveNavbar();
+                }, 500);
                 break;
         }
     }
@@ -3494,6 +3512,9 @@ class FitnessTracker {
     initializeActivityDistribution() {
         console.log('🎯 Initializing activity distribution with default data...');
         
+        // Preserve navbar during activity distribution initialization
+        this.preserveNavbar();
+        
         // Create sample fitness activities data that matches the expected format
         this.sampleFitnessActivities = [
             // Running activities (21 sessions - 45%)
@@ -3523,6 +3544,11 @@ class FitnessTracker {
         }, 100);
         
         console.log('✅ Activity distribution initialized with default data');
+        
+        // Final navbar preservation after activity distribution
+        setTimeout(() => {
+            this.preserveNavbar();
+        }, 150);
     }
 
     createImmediatePieChart() {
@@ -4328,6 +4354,10 @@ class EnhancedAnimations {
     // Reports Section Methods - Enhanced Backend Integration
     async loadReportsData() {
         console.log('🔄 Loading Reports Data...');
+        
+        // Preserve navbar at start of reports loading
+        this.preserveNavbar();
+        
         try {
             this.currentReportPeriod = 'week';
             console.log('📊 Setting up reports for period:', this.currentReportPeriod);
@@ -4350,6 +4380,9 @@ class EnhancedAnimations {
             this.setupReportEventListeners();
             this.initializeCharts();
             console.log('✅ Reports data loaded successfully');
+            
+            // Final navbar preservation after all reports are loaded
+            this.preserveNavbar();
         } catch (error) {
             console.error('❌ Error loading reports:', error);
             console.log('🔄 Loading fallback data instead...');
