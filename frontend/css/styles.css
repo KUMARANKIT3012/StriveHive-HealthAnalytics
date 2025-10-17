@@ -7077,7 +7077,7 @@ body::before {
 
     /* Hamburger menu display */
     .hamburger {
-        display: flex;
+        display: flex !important;
     }
 
     /* Prevent body scroll when mobile menu is open */
