@@ -2600,15 +2600,16 @@ document.addEventListener('DOMContentLoaded', () => {
         
         console.log('🔍 NAVBAR DEBUG REPORT:');
         console.log('Navbar element:', navbar);
-        console.log('Navbar styles:', navbar ? window.getComputedStyle(navbar) : 'NOT FOUND');
-        console.log('Navbar display:', navbar ? window.getComputedStyle(navbar).display : 'N/A');
-        console.log('Navbar visibility:', navbar ? window.getComputedStyle(navbar).visibility : 'N/A');
-        console.log('Navbar opacity:', navbar ? window.getComputedStyle(navbar).opacity : 'N/A');
-        console.log('Navbar position:', navbar ? window.getComputedStyle(navbar).position : 'N/A');
-        console.log('Navbar top:', navbar ? window.getComputedStyle(navbar).top : 'N/A');
-        console.log('Navbar zIndex:', navbar ? window.getComputedStyle(navbar).zIndex : 'N/A');
         console.log('Nav container:', navContainer);
         console.log('Nav menu:', navMenu);
+        
+        if (navMenu) {
+            const navItems = navMenu.querySelectorAll('.nav-item');
+            const navLinks = navMenu.querySelectorAll('.nav-link');
+            console.log('Nav items found:', navItems.length);
+            console.log('Nav links found:', navLinks.length);
+            console.log('Nav menu display:', window.getComputedStyle(navMenu).display);
+        }
         
         if (navbar) {
             // Force make navbar visible with enhanced positioning
@@ -2657,7 +2658,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     position: static !important;
                     background: none !important;
                     height: auto !important;
+                    flex-direction: row !important;
+                    align-items: center !important;
+                    justify-content: flex-end !important;
                 `;
+                
+                // Ensure each nav link is visible
+                const navLinks = navMenu.querySelectorAll('.nav-link');
+                navLinks.forEach(link => {
+                    link.style.cssText = `
+                        display: flex !important;
+                        align-items: center !important;
+                        color: #2d3748 !important;
+                        text-decoration: none !important;
+                        font-weight: 600 !important;
+                        padding: 12px 20px !important;
+                        border-radius: 25px !important;
+                        transition: all 0.3s ease !important;
+                        gap: 8px !important;
+                        font-size: 16px !important;
+                        opacity: 1 !important;
+                        visibility: visible !important;
+                        transform: none !important;
+                        background: rgba(255, 255, 255, 0.1) !important;
+                    `;
+                });
+                
+                console.log('✅ Fixed nav menu and links visibility');
             }
             
             console.log('✅ Applied enhanced force-visible styles to navbar');
@@ -2670,9 +2697,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('✅ Added top padding to main content');
             }
             
+            // Hide hamburger menu on desktop
+            const hamburger = document.querySelector('.hamburger');
+            if (hamburger) {
+                hamburger.style.display = 'none !important';
+            }
+            
             // Force body to not hide navbar
             document.body.style.paddingTop = '0';
             document.body.style.marginTop = '0';
+            
+            // Add hover effects for nav links
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('mouseenter', () => {
+                    link.style.background = 'rgba(102, 126, 234, 0.1) !important';
+                    link.style.transform = 'translateY(-2px) !important';
+                });
+                link.addEventListener('mouseleave', () => {
+                    link.style.background = 'rgba(255, 255, 255, 0.1) !important';
+                    link.style.transform = 'none !important';
+                });
+            });
         }
     }, 100);
     
