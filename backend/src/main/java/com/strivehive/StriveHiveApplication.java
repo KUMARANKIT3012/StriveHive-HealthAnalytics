@@ -1,25 +1,13 @@
-package com.strivehive;package com.strivehive;
+package com.strivehive;
 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+@SpringBootApplication
+public class StriveHiveApplication {
 
-import org.springframework.boot.SpringApplication;import org.springframework.boot.SpringApplication;
-
-import org.springframework.boot.autoconfigure.SpringBootApplication;import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-
-
-@SpringBootApplication@SpringBootApplication
-
-public class StriveHiveApplication {public class StriveHiveApplication {
-
-
-
-    public static void main(String[] args) {    public static void main(String[] args) {
-
-        SpringApplication.run(StriveHiveApplication.class, args);        SpringApplication.run(StriveHiveApplication.class, args);
-
-        System.out.println("StriveHive Backend started successfully on port 8081!");    }
-
-    }}
-
+    public static void main(String[] args) {
+        SpringApplication.run(StriveHiveApplication.class, args);
+        System.out.println("StriveHive Backend started successfully on port 8081!");
+    }
 }

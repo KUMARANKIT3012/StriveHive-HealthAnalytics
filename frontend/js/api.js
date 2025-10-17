@@ -1,6 +1,12 @@
 // API Handler for Backend Communication
 class API {
-    static BASE_URL = 'http://localhost:8081/api';
+    // Default BASE_URL: use localhost for local dev, otherwise use relative path so
+    // the deployed frontend can call a proxied backend (if you deploy backend
+    // to the same domain or add a proxy). This also allows OfflineAPI/mock
+    // fallbacks to work when backend isn't reachable.
+    static BASE_URL = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
+        ? 'http://localhost:8081/api'
+        : '/api';
     
     // Generic request handler
     static async request(endpoint, options = {}) {

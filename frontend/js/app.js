@@ -1344,40 +1344,13 @@ class StriveHiveApp {
             let savedUser;
             
             if (this.currentUser && this.currentUser.id) {
-                // Update existing user
-                const response = await fetch(`${API.BASE_URL}/users/${this.currentUser.id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify(userData)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                savedUser = await response.json();
-                this.showToast('Profile updated successfully! 🎉', 'success');
+                // Update existing user via API class (uses OfflineAPI fallback)
+                savedUser = await API.saveUser({ id: this.currentUser.id, ...userData });
+                this.showToast('Profile updated successfully! \u{1F389}', 'success');
             } else {
-                // Create new user
-                const response = await fetch(`${API.BASE_URL}/users`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify(userData)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                savedUser = await response.json();
-                this.showToast('Profile created successfully! Welcome to Strive Hive! 🚀', 'success');
-                
+                // Create new user via API class
+                savedUser = await API.saveUser(userData);
+                this.showToast('Profile created successfully! Welcome to Strive Hive! \u{1F680}', 'success');
                 // Add achievement for completing profile
                 this.addAchievement('Profile Complete', 'user');
             }
@@ -1477,12 +1450,11 @@ class StriveHiveApp {
     }
 
     async loadProfileData() {
-        // Try to load user from backend if we have an ID
+        // Try to load user from backend if we have an ID (uses API class)
         if (this.currentUser && this.currentUser.id) {
             try {
-                const response = await fetch(`${API.BASE_URL}/users/${this.currentUser.id}`);
-                if (response.ok) {
-                    const userData = await response.json();
+                const userData = await API.getUserById(this.currentUser.id);
+                if (userData) {
                     this.currentUser = userData;
                     this.saveUserData();
                 }
@@ -1490,15 +1462,12 @@ class StriveHiveApp {
                 console.log('Using local user data - backend not available');
             }
         } else {
-            // If no current user, try to load the first user (demo data)
+            // If no current user, try to load the first user (demo data) via API
             try {
-                const response = await fetch(`${API.BASE_URL}/users`);
-                if (response.ok) {
-                    const users = await response.json();
-                    if (users.length > 0) {
-                        this.currentUser = users[0]; // Use first user as demo
-                        this.saveUserData();
-                    }
+                const users = await API.getUsers();
+                if (users && users.length > 0) {
+                    this.currentUser = users[0]; // Use first user as demo
+                    this.saveUserData();
                 }
             } catch (error) {
                 console.log('Backend not available - using demo data');
@@ -3952,13 +3921,18 @@ class EnhancedAnimations {
             this.currentReportPeriod = 'week';
             console.log('📊 Setting up reports for period:', this.currentReportPeriod);
             
-            // Test backend connection first
-            const healthCheck = await fetch('http://localhost:8081/api/health');
-            if (healthCheck.ok) {
-                console.log('✅ Backend connection successful');
-                await this.generateReport(this.currentReportPeriod);
-            } else {
-                console.warn('⚠️ Backend health check failed - using fallback data');
+            // Test backend connection first via API class
+            try {
+                const health = await API.request('/health');
+                if (health) {
+                    console.log('✅ Backend connection successful');
+                    await this.generateReport(this.currentReportPeriod);
+                } else {
+                    console.warn('⚠️ Backend health check returned no body - using fallback data');
+                    this.showOfflineReportsData();
+                }
+            } catch (err) {
+                console.warn('⚠️ Backend health check failed - using fallback data', err);
                 this.showOfflineReportsData();
             }
             
@@ -4131,31 +4105,17 @@ class EnhancedAnimations {
         try {
             this.showReportLoading(true);
             
-            const reportUrl = `http://localhost:8081/api/reports/${userId}/${period}`;
-            console.log('🌐 Fetching report from:', reportUrl);
-            
-            const response = await fetch(reportUrl);
-            console.log('📡 Response status:', response.status);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const reportData = await response.json();
+            const response = await API.request(`/reports/${userId}/${period}`);
+            const reportData = response;
             console.log('📊 Report data received:', reportData);
             this.updateReportDisplay(reportData);
             
             // Also get trends data for better insights
-            const trendsUrl = `http://localhost:8081/api/reports/${userId}/trends`;
-            console.log('📈 Fetching trends from:', trendsUrl);
-            
-            const trendsResponse = await fetch(trendsUrl);
-            if (trendsResponse.ok) {
-                const trendsData = await trendsResponse.json();
-                console.log('📈 Trends data received:', trendsData);
+            try {
+                const trendsData = await API.request(`/reports/${userId}/trends`);
                 this.updateTrendsDisplay(trendsData);
-            } else {
-                console.warn('⚠️ Trends data not available');
+            } catch (err) {
+                console.warn('⚠️ Trends data not available', err);
             }
 
         } catch (error) {
@@ -4614,17 +4574,7 @@ class EnhancedAnimations {
         try {
             this.showExportLoading(true);
             
-            const exportUrl = `http://localhost:8081/api/reports/${userId}/export/${format}`;
-            console.log('🌐 Export URL:', exportUrl);
-            
-            const response = await fetch(exportUrl);
-            console.log('📡 Export response status:', response.status);
-            
-            if (!response.ok) {
-                throw new Error(`Export failed: HTTP ${response.status}`);
-            }
-            
-            const exportData = await response.json();
+            const exportData = await API.request(`/reports/${userId}/export/${format}`);
             console.log('📊 Export data received:', exportData);
             
             if (format === 'pdf') {
@@ -4755,19 +4705,13 @@ class EnhancedAnimations {
         console.log(`🔗 Creating share link for user ${userId}`);
 
         try {
-            const shareUrl = `http://localhost:8081/api/reports/${userId}/share`;
-            console.log('🌐 Share URL:', shareUrl);
-            
-            const response = await fetch(shareUrl);
-            console.log('📡 Share response status:', response.status);
-            
-            if (!response.ok) {
-                throw new Error(`Share failed: HTTP ${response.status}`);
+            try {
+                const shareData = await API.request(`/reports/${userId}/share`);
+                console.log('🔗 Share data received:', shareData);
+                this.showShareModal(shareData);
+            } catch (err) {
+                throw err;
             }
-            
-            const shareData = await response.json();
-            console.log('🔗 Share data received:', shareData);
-            this.showShareModal(shareData);
             
         } catch (error) {
             console.error('❌ Share error:', error);

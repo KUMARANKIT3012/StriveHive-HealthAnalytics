@@ -13,18 +13,14 @@ public class CorsConfig {
 
     @Bean
     public CorsFilter corsFilter() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:5500",
-                "http://127.0.0.1:5500",
-                "http://localhost:3000",
-                "http://localhost:8080",
-                "file://"
-        ));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
+    CorsConfiguration configuration = new CorsConfiguration();
+    // Allow all origins via patterns to support deployed frontend (e.g. Vercel)
+    // Note: For production, replace '*' with a specific list of trusted origins
+    configuration.setAllowedOriginPatterns(List.of("*"));
+    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+    configuration.setAllowedHeaders(List.of("*"));
+    configuration.setAllowCredentials(true);
+    configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);
