@@ -1270,6 +1270,8 @@ class StriveHiveApp {
     }
 
     showSection(sectionName) {
+        console.log('Showing section:', sectionName);
+        
         // Hide all sections
         document.querySelectorAll('.section').forEach(section => {
             section.classList.remove('active');
@@ -1280,6 +1282,9 @@ class StriveHiveApp {
         if (targetSection) {
             targetSection.classList.add('active');
             this.currentSection = sectionName;
+            console.log('Successfully activated section:', sectionName);
+        } else {
+            console.error('Section not found:', sectionName);
         }
 
         // Update navigation
@@ -1290,6 +1295,9 @@ class StriveHiveApp {
         const activeLink = document.querySelector(`[href="#${sectionName}"]`);
         if (activeLink) {
             activeLink.classList.add('active');
+            console.log('Navigation link activated for:', sectionName);
+        } else {
+            console.warn('Navigation link not found for:', sectionName);
         }
 
         // Load section-specific data
@@ -1383,7 +1391,15 @@ class StriveHiveApp {
                 this.saveUserData();
                 this.updateHealthMetrics();
                 this.displayUserInfo();
-                this.loadProfileData();
+                // Don't reload profile data as it might cause navigation issues
+                // this.loadProfileData(); 
+                
+                // Navigate to dashboard to show the updated profile
+                setTimeout(() => {
+                    console.log('Navigating to dashboard after profile save');
+                    this.showSection('dashboard');
+                    this.updateDashboard();
+                }, 1000);
                 
             } catch (apiError) {
                 console.error('API Error:', apiError);
