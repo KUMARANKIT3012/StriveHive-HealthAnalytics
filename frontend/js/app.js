@@ -1391,15 +1391,27 @@ class StriveHiveApp {
                 this.saveUserData();
                 this.updateHealthMetrics();
                 this.displayUserInfo();
-                // Don't reload profile data as it might cause navigation issues
-                // this.loadProfileData(); 
                 
-                // Navigate to dashboard to show the updated profile
-                setTimeout(() => {
-                    console.log('Navigating to dashboard after profile save');
-                    this.showSection('dashboard');
-                    this.updateDashboard();
-                }, 1000);
+                // Show success message with dashboard link
+                if (this.currentUser && this.currentUser.id) {
+                    alert('Profile updated successfully! 🎉 Click OK to view your dashboard.');
+                } else {
+                    alert('Profile created successfully! Welcome to Strive Hive! 🚀 Click OK to view your dashboard.');
+                }
+                
+                // Navigate to dashboard immediately after alert
+                console.log('Navigating to dashboard after profile save');
+                this.showSection('dashboard');
+                this.updateDashboard();
+                
+                // Also manually trigger the dashboard navigation link
+                const dashboardLink = document.querySelector('a[href="#dashboard"]');
+                if (dashboardLink) {
+                    console.log('Found dashboard link, clicking it');
+                    dashboardLink.click();
+                } else {
+                    console.warn('Dashboard link not found');
+                }
                 
             } catch (apiError) {
                 console.error('API Error:', apiError);
