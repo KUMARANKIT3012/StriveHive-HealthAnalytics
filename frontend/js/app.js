@@ -1302,6 +1302,88 @@ class StriveHiveApp {
 
         // Load section-specific data
         this.loadSectionData(sectionName);
+        
+        // Ensure navbar stays visible after section change
+        setTimeout(() => this.preserveNavbar(), 50);
+    }
+    
+    preserveNavbar() {
+        const navbar = document.querySelector('.navbar');
+        const navContainer = document.querySelector('.nav-container');
+        const navMenu = document.querySelector('.nav-menu');
+        
+        if (navbar) {
+            navbar.style.cssText = `
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                z-index: 99999 !important;
+                background: rgba(255, 255, 255, 0.95) !important;
+                backdrop-filter: blur(20px) !important;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+                box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1) !important;
+                padding: 0 20px !important;
+                min-height: 80px !important;
+                transform: none !important;
+                margin: 0 !important;
+            `;
+        }
+        
+        if (navContainer) {
+            navContainer.style.cssText = `
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                max-width: 1400px !important;
+                margin: 0 auto !important;
+                padding: 20px 0 !important;
+                width: 100% !important;
+            `;
+        }
+        
+        if (navMenu) {
+            navMenu.style.cssText = `
+                display: flex !important;
+                list-style: none !important;
+                gap: 30px !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                transform: none !important;
+                position: static !important;
+                background: none !important;
+                height: auto !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: flex-end !important;
+            `;
+            
+            const navLinks = navMenu.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.style.cssText = `
+                    display: flex !important;
+                    align-items: center !important;
+                    color: #2d3748 !important;
+                    text-decoration: none !important;
+                    font-weight: 600 !important;
+                    padding: 12px 20px !important;
+                    border-radius: 25px !important;
+                    transition: all 0.3s ease !important;
+                    gap: 8px !important;
+                    font-size: 16px !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    transform: none !important;
+                    background: rgba(255, 255, 255, 0.1) !important;
+                `;
+            });
+        }
+        
+        console.log('🔒 Navbar preserved after section change');
     }
 
     loadSectionData(sectionName) {
@@ -2722,9 +2804,98 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 100);
     
+    // Create preserveNavbar function for the app instance
+    if (window.striveHiveApp) {
+        window.striveHiveApp.preserveNavbar = function() {
+            const navbar = document.querySelector('.navbar');
+            const navContainer = document.querySelector('.nav-container');
+            const navMenu = document.querySelector('.nav-menu');
+            
+            if (navbar) {
+                navbar.style.cssText = `
+                    display: block !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                    position: fixed !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    right: 0 !important;
+                    width: 100% !important;
+                    z-index: 99999 !important;
+                    background: rgba(255, 255, 255, 0.95) !important;
+                    backdrop-filter: blur(20px) !important;
+                    border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+                    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1) !important;
+                    padding: 0 20px !important;
+                    min-height: 80px !important;
+                    transform: none !important;
+                    margin: 0 !important;
+                `;
+            }
+            
+            if (navContainer) {
+                navContainer.style.cssText = `
+                    display: flex !important;
+                    justify-content: space-between !important;
+                    align-items: center !important;
+                    max-width: 1400px !important;
+                    margin: 0 auto !important;
+                    padding: 20px 0 !important;
+                    width: 100% !important;
+                `;
+            }
+            
+            if (navMenu) {
+                navMenu.style.cssText = `
+                    display: flex !important;
+                    list-style: none !important;
+                    gap: 30px !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    transform: none !important;
+                    position: static !important;
+                    background: none !important;
+                    height: auto !important;
+                    flex-direction: row !important;
+                    align-items: center !important;
+                    justify-content: flex-end !important;
+                `;
+                
+                const navLinks = navMenu.querySelectorAll('.nav-link');
+                navLinks.forEach(link => {
+                    link.style.cssText = `
+                        display: flex !important;
+                        align-items: center !important;
+                        color: #2d3748 !important;
+                        text-decoration: none !important;
+                        font-weight: 600 !important;
+                        padding: 12px 20px !important;
+                        border-radius: 25px !important;
+                        transition: all 0.3s ease !important;
+                        gap: 8px !important;
+                        font-size: 16px !important;
+                        opacity: 1 !important;
+                        visibility: visible !important;
+                        transform: none !important;
+                        background: rgba(255, 255, 255, 0.1) !important;
+                    `;
+                });
+            }
+            
+            console.log('🔒 Navbar preserved after section change');
+        };
+    }
+    
     try {
         window.striveHiveApp = new StriveHiveApp();
         console.log('StriveHiveApp initialized successfully');
+        
+        // Start continuous navbar monitoring
+        if (window.striveHiveApp) {
+            setInterval(() => {
+                window.striveHiveApp.preserveNavbar();
+            }, 3000); // Check every 3 seconds
+        }
         
         // Add backup event listener for profile form
         const profileForm = document.getElementById('profile-form');
