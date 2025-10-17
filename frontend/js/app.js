@@ -141,144 +141,46 @@ class StriveHiveApp {
         const hamburger = document.getElementById('hamburger');
         const navMenu = document.getElementById('nav-menu');
 
-        // Set up navigation links with IMMEDIATE menu close
+        // Set up navigation links (safe handler)
         navLinks.forEach(link => {
-            // Create a super aggressive click handler
             const handleNavClick = (e) => {
+                // Standard navigation handler - avoid injecting global styles or nuking the menu
                 e.preventDefault();
                 e.stopPropagation();
-                e.stopImmediatePropagation();
-                
-                console.log('🔥 NAV LINK CLICKED - FORCE CLOSING MENU');
-                
-                // Add a CSS override style that will force hide the menu
-                let forceHideStyle = document.getElementById('force-hide-nav');
-                if (!forceHideStyle) {
-                    forceHideStyle = document.createElement('style');
-                    forceHideStyle.id = 'force-hide-nav';
-                    document.head.appendChild(forceHideStyle);
-                }
-                
-                // Inject CSS that overrides everything
-                forceHideStyle.textContent = `
-                    #nav-menu {
-                        display: none !important;
-                        visibility: hidden !important;
-                        opacity: 0 !important;
-                        transform: translateX(-100%) !important;
-                        left: -100% !important;
-                        top: -100vh !important;
-                        z-index: -9999 !important;
-                        pointer-events: none !important;
-                        animation: none !important;
-                        transition: none !important;
-                    }
-                    body {
-                        overflow: auto !important;
-                        position: static !important;
-                    }
-                    #hamburger {
-                        animation: none !important;
-                        transition: none !important;
-                    }
-                `;
-                
-                // Get elements directly each time
-                const hamburger = document.getElementById('hamburger');
-                const navMenu = document.getElementById('nav-menu');
-                const body = document.body;
-                
-                // NUCLEAR OPTION - Force remove ALL nav classes and reset body
-                if (hamburger) {
-                    hamburger.className = hamburger.className.replace(/active/g, '');
-                    hamburger.style.cssText = '';
-                }
-                
-                if (navMenu) {
-                    navMenu.className = navMenu.className.replace(/active/g, '');
-                    navMenu.style.cssText = `
-                        transform: translateX(-100%) !important;
-                        left: -100% !important;
-                        opacity: 0 !important;
-                        visibility: hidden !important;
-                        display: none !important;
-                        pointer-events: none !important;
-                        animation: none !important;
-                        transition: none !important;
-                    `;
-                }
-                
-                if (body) {
-                    // Remove nav-open class multiple ways
-                    body.classList.remove('nav-open');
-                    body.className = body.className.replace(/nav-open/g, '');
-                    body.className = body.className.replace(/\s+/g, ' ').trim();
-                    
-                    // Force reset body overflow
-                    body.style.overflow = '';
-                    body.style.position = '';
-                    body.style.width = '';
-                }
-                
-                console.log('🔥 NUCLEAR MENU CLOSE - Body classes:', body.className);
-                
-                // Aggressive cleanup loop - keep removing nav-open until it's gone
-                let cleanupAttempts = 0;
-                const cleanupInterval = setInterval(() => {
-                    cleanupAttempts++;
-                    if (body.classList.contains('nav-open') && cleanupAttempts < 10) {
-                        body.classList.remove('nav-open');
-                        body.style.overflow = '';
-                        console.log('🧹 Cleanup attempt', cleanupAttempts, '- removing persistent nav-open');
-                    } else {
-                        clearInterval(cleanupInterval);
-                        console.log('🧹 Cleanup complete after', cleanupAttempts, 'attempts');
-                    }
-                }, 50);
-                
-                // Handle navigation after menu is closed
-                const targetSection = link.getAttribute('href').substring(1);
-                
-                // Update active nav link
-                navLinks.forEach(navLink => {
-                    navLink.classList.remove('active');
-                });
+
+                const targetSection = (link.getAttribute('href') || '#dashboard').replace('#', '');
+
+                // Update active nav link visually
+                navLinks.forEach(navLink => navLink.classList.remove('active'));
                 link.classList.add('active');
-                
-                // Navigate to section
+
+                // If mobile menu is open, close it gracefully
+                if (navMenu && navMenu.classList.contains('active')) {
+                    navMenu.classList.remove('active');
+                    if (hamburger) hamburger.classList.remove('active');
+                    document.body.classList.remove('nav-open');
+                    // Reset any inline styles that might hide it so it can be opened later
+                    navMenu.style.transform = '';
+                    navMenu.style.display = '';
+                    navMenu.style.opacity = '';
+                    navMenu.style.visibility = '';
+                    navMenu.style.pointerEvents = '';
+                }
+
+                // Navigate to the chosen section
                 this.showSection(targetSection);
-                
-                console.log('🎯 Navigation completed, menu should be hidden');
-                
-                // Remove the override styles after navigation is complete
-                setTimeout(() => {
-                    if (forceHideStyle && forceHideStyle.parentNode) {
-                        forceHideStyle.remove();
-                    }
-                    // Reset menu display so it can be opened again
-                    if (navMenu) {
-                        navMenu.style.display = '';
-                    }
-                    console.log('🧹 Override styles removed and menu reset');
-                }, 300);
             };
-            
-            // Add multiple event listeners for maximum compatibility
-            link.addEventListener('click', handleNavClick, true); // Use capture phase
-            link.addEventListener('touchstart', handleNavClick, true);
-            link.addEventListener('touchend', handleNavClick, true);
 
-            // Add hover effects
+            // Attach listeners (click + touch) without capture and without heavy side-effects
+            link.addEventListener('click', handleNavClick);
+            link.addEventListener('touchstart', handleNavClick);
+
+            // Light hover effects only
             link.addEventListener('mouseenter', () => {
-                if (!link.classList.contains('active')) {
-                    link.style.transform = 'translateY(-2px)';
-                }
+                if (!link.classList.contains('active')) link.style.transform = 'translateY(-2px)';
             });
-
             link.addEventListener('mouseleave', () => {
-                if (!link.classList.contains('active')) {
-                    link.style.transform = 'translateY(0)';
-                }
+                if (!link.classList.contains('active')) link.style.transform = '';
             });
         });
 
