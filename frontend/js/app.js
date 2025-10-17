@@ -2591,6 +2591,39 @@ class StriveHiveApp {
 // Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, initializing app...');
+    
+    // Debug navbar visibility immediately
+    setTimeout(() => {
+        const navbar = document.querySelector('.navbar');
+        const navContainer = document.querySelector('.nav-container');
+        const navMenu = document.querySelector('.nav-menu');
+        
+        console.log('🔍 NAVBAR DEBUG REPORT:');
+        console.log('Navbar element:', navbar);
+        console.log('Navbar styles:', navbar ? window.getComputedStyle(navbar) : 'NOT FOUND');
+        console.log('Navbar display:', navbar ? window.getComputedStyle(navbar).display : 'N/A');
+        console.log('Navbar visibility:', navbar ? window.getComputedStyle(navbar).visibility : 'N/A');
+        console.log('Navbar opacity:', navbar ? window.getComputedStyle(navbar).opacity : 'N/A');
+        console.log('Navbar position:', navbar ? window.getComputedStyle(navbar).position : 'N/A');
+        console.log('Navbar top:', navbar ? window.getComputedStyle(navbar).top : 'N/A');
+        console.log('Navbar zIndex:', navbar ? window.getComputedStyle(navbar).zIndex : 'N/A');
+        console.log('Nav container:', navContainer);
+        console.log('Nav menu:', navMenu);
+        
+        if (navbar) {
+            // Force make navbar visible
+            navbar.style.display = 'block';
+            navbar.style.visibility = 'visible';
+            navbar.style.opacity = '1';
+            navbar.style.position = 'fixed';
+            navbar.style.top = '0';
+            navbar.style.zIndex = '9999';
+            navbar.style.background = 'rgba(255, 255, 255, 0.95)';
+            navbar.style.width = '100%';
+            console.log('✅ Applied force-visible styles to navbar');
+        }
+    }, 100);
+    
     try {
         window.striveHiveApp = new StriveHiveApp();
         console.log('StriveHiveApp initialized successfully');
