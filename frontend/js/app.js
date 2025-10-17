@@ -949,13 +949,19 @@ class StriveHiveApp {
     }
 
     setupFormHandlers() {
+        console.log('Setting up form handlers...');
+        
         // Profile form
         const profileForm = document.getElementById('profile-form');
         if (profileForm) {
+            console.log('Profile form found, attaching event listener');
             profileForm.addEventListener('submit', (e) => {
+                console.log('Profile form submitted');
                 e.preventDefault();
                 this.handleProfileSubmit(e);
             });
+        } else {
+            console.warn('Profile form not found!');
         }
 
         // Fitness form
@@ -1316,19 +1322,66 @@ class StriveHiveApp {
     }
 
     async handleProfileSubmit(e) {
+        console.log('handleProfileSubmit called');
+        e.preventDefault(); // Prevent default form submission
+        
         const formData = new FormData(e.target);
         const userData = Object.fromEntries(formData.entries());
+        console.log('Form data collected:', userData);
         
-        // Convert numeric fields
-        userData.age = parseInt(userData.age);
-        userData.height = parseFloat(userData.height);
-        userData.weight = parseFloat(userData.weight);
+        // Validate required fields
+        if (!userData.name || !userData.email || !userData.age || !userData.gender || 
+            !userData.height || !userData.weight || !userData.activityLevel || !userData.fitnessGoal) {
+            console.log('Validation failed: missing required fields');
+            this.showToast('Please fill in all required fields.', 'error');
+            return;
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(userData.email)) {
+            console.log('Validation failed: invalid email');
+            this.showToast('Please enter a valid email address.', 'error');
+            return;
+        }
+        
+        // Convert numeric fields with validation
+        try {
+            userData.age = parseInt(userData.age);
+            userData.height = parseFloat(userData.height);
+            userData.weight = parseFloat(userData.weight);
+            
+            // Validate numeric ranges
+            if (userData.age < 1 || userData.age > 150) {
+                this.showToast('Age must be between 1 and 150 years.', 'error');
+                return;
+            }
+            
+            if (userData.height < 50 || userData.height > 300) {
+                this.showToast('Height must be between 50 and 300 cm.', 'error');
+                return;
+            }
+            
+            if (userData.weight < 20 || userData.weight > 500) {
+                this.showToast('Weight must be between 20 and 500 kg.', 'error');
+                return;
+            }
+            
+        } catch (error) {
+            console.log('Validation failed: numeric conversion error', error);
+            this.showToast('Please enter valid numbers for age, height, and weight.', 'error');
+            return;
+        }
         
         // Add weight goal if not provided
         if (!userData.weightGoal) {
             userData.weightGoal = userData.weight; // Default to current weight
         } else {
             userData.weightGoal = parseFloat(userData.weightGoal);
+            if (userData.weightGoal < 20 || userData.weightGoal > 500) {
+                this.showToast('Target weight must be between 20 and 500 kg.', 'error');
+                return;
+            }
         }
         
         // Add calorie goal based on BMR and activity level
@@ -1336,8 +1389,13 @@ class StriveHiveApp {
             userData.calorieGoal = this.calculateCalorieGoal(userData);
         } else {
             userData.calorieGoal = parseInt(userData.calorieGoal);
+            if (userData.calorieGoal < 800 || userData.calorieGoal > 5000) {
+                this.showToast('Daily calorie goal must be between 800 and 5000 calories.', 'error');
+                return;
+            }
         }
 
+        console.log('All validations passed, attempting to save user:', userData);
         this.showLoading(true);
 
         try {
@@ -1345,16 +1403,19 @@ class StriveHiveApp {
             
             if (this.currentUser && this.currentUser.id) {
                 // Update existing user via API class (uses OfflineAPI fallback)
+                console.log('Updating existing user');
                 savedUser = await API.saveUser({ id: this.currentUser.id, ...userData });
-                this.showToast('Profile updated successfully! \u{1F389}', 'success');
+                this.showToast('Profile updated successfully! 🎉', 'success');
             } else {
                 // Create new user via API class
+                console.log('Creating new user');
                 savedUser = await API.saveUser(userData);
-                this.showToast('Profile created successfully! Welcome to Strive Hive! \u{1F680}', 'success');
+                this.showToast('Profile created successfully! Welcome to Strive Hive! 🚀', 'success');
                 // Add achievement for completing profile
                 this.addAchievement('Profile Complete', 'user');
             }
             
+            console.log('User saved successfully:', savedUser);
             this.currentUser = savedUser;
             this.saveUserData();
             this.updateHealthMetrics();
@@ -1363,7 +1424,7 @@ class StriveHiveApp {
             
         } catch (error) {
             console.error('Error saving profile:', error);
-            this.showToast('Error saving profile. Please try again.', 'error');
+            this.showToast('Error saving profile: ' + error.message, 'error');
         } finally {
             this.showLoading(false);
         }
