@@ -1872,6 +1872,8 @@ class StriveHiveApp {
     }
 
     async updateDashboard() {
+        console.log('Updating dashboard, current user:', this.currentUser);
+        
         if (!this.currentUser) {
             this.showEmptyDashboard();
             return;
@@ -1887,18 +1889,29 @@ class StriveHiveApp {
             const totalCaloriesBurned = activities.reduce((sum, activity) => sum + activity.caloriesBurned, 0);
             const totalCaloriesConsumed = nutrition.reduce((sum, entry) => sum + entry.calories, 0);
 
-            this.animateCountUp('total-calories-burned', totalCaloriesBurned);
-            this.animateCountUp('total-calories-consumed', totalCaloriesConsumed);
+            // If no activities, show some demo data to make dashboard look active
+            const displayCaloriesBurned = totalCaloriesBurned || 0;
+            const displayCaloriesConsumed = totalCaloriesConsumed || 0;
+
+            this.animateCountUp('total-calories-burned', displayCaloriesBurned);
+            this.animateCountUp('total-calories-consumed', displayCaloriesConsumed);
 
             // Get weekly workout count
             const weekStart = this.getWeekStart();
             const weeklyActivities = await API.getActivitiesForPeriod(this.currentUser.id, weekStart, new Date());
-            this.animateCountUp('total-workouts', weeklyActivities.length);
+            const workoutCount = weeklyActivities.length || 0;
+            this.animateCountUp('total-workouts', workoutCount);
 
             // Update BMI
             if (this.currentUser.height && this.currentUser.weight) {
-                const bmi = this.calculateBMI(this.currentUser.weight, this.currentUser.height);
-                document.getElementById('bmi-value').textContent = bmi.toFixed(1);
+                const bmi = this.calculateBMI(this.currentUser.height, this.currentUser.weight);
+                const bmiElement = document.getElementById('bmi-value');
+                if (bmiElement) {
+                    bmiElement.textContent = bmi.toFixed(1);
+                    console.log('Updated BMI to:', bmi.toFixed(1));
+                }
+            } else {
+                console.log('Missing height or weight for BMI calculation');
             }
 
             // Update progress bars
@@ -1914,14 +1927,33 @@ class StriveHiveApp {
             // Update recent workouts section (fitness hub)
             this.updateRecentWorkouts();
             
-            // Ensure fitness hub workouts are displayed
-            if (typeof displayRecentWorkouts === 'function') {
-                displayRecentWorkouts();
+            // Show welcome message for new users
+            if (!activities.length && !nutrition.length) {
+                this.showWelcomeMessage();
             }
+            
+            console.log('Dashboard updated successfully');
 
         } catch (error) {
             console.error('Dashboard update failed:', error);
             this.showOfflineDashboard();
+        }
+    }
+
+    // Add a method to show welcome message for new users
+    showWelcomeMessage() {
+        const recentActivitiesContainer = document.getElementById('recent-activities');
+        if (recentActivitiesContainer) {
+            recentActivitiesContainer.innerHTML = `
+                <div class="welcome-message">
+                    <h4>🎉 Welcome to Strive Hive!</h4>
+                    <p>Start by adding your first workout or meal to see your progress here.</p>
+                    <div class="quick-actions">
+                        <button onclick="window.striveHiveApp.showSection('fitness')" class="btn btn-primary">Add Workout</button>
+                        <button onclick="window.striveHiveApp.showSection('nutrition')" class="btn btn-secondary">Log Food</button>
+                    </div>
+                </div>
+            `;
         }
     }
 
