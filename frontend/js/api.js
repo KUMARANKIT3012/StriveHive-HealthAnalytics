@@ -51,7 +51,16 @@ class API {
             
             // Return mock data for development if backend is not available
             if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                console.warn('Backend not available, using mock data');
+                console.warn('Backend not available (network error), using mock data');
+                return this.getMockData(endpoint, options);
+            }
+            
+            // Also handle HTTP 404 and 500 errors by falling back to mock data
+            if (error.message.includes('HTTP error! status: 404') || 
+                error.message.includes('HTTP error! status: 500') ||
+                error.message.includes('HTTP error! status: 502') ||
+                error.message.includes('HTTP error! status: 503')) {
+                console.warn('Backend not available (HTTP error), using mock data');
                 return this.getMockData(endpoint, options);
             }
             
@@ -61,25 +70,81 @@ class API {
 
     // Mock data for development without backend
     static getMockData(endpoint, options) {
-        const mockData = {
-            '/users': {
-                GET: [],
-                POST: { id: 1, name: 'Mock User', email: 'mock@example.com', createdDate: new Date().toISOString() }
-            },
-            '/activities': {
-                GET: [],
-                POST: { id: 1, activityType: 'running', duration: 30, caloriesBurned: 300, recordedAt: new Date().toISOString() }
-            },
-            '/nutrition': {
-                GET: [],
-                POST: { id: 1, foodName: 'Mock Food', mealType: 'breakfast', calories: 200, recordedAt: new Date().toISOString() }
-            }
-        };
-
-        const method = options.method || 'GET';
-        const baseEndpoint = endpoint.split('?')[0].split('/').slice(0, 2).join('/');
+        console.log('Using mock data for endpoint:', endpoint, 'method:', options.method || 'GET');
         
-        return mockData[baseEndpoint]?.[method] || [];
+        const method = options.method || 'GET';
+        const body = options.body ? JSON.parse(options.body) : null;
+        
+        // Handle user endpoints
+        if (endpoint.startsWith('/users')) {
+            if (method === 'POST') {
+                // Create new user
+                const newUser = {
+                    id: Date.now(),
+                    ...body,
+                    createdDate: new Date().toISOString(),
+                    updatedDate: new Date().toISOString()
+                };
+                console.log('Mock: Created new user:', newUser);
+                return newUser;
+            } else if (method === 'PUT') {
+                // Update existing user
+                const updatedUser = {
+                    ...body,
+                    updatedDate: new Date().toISOString()
+                };
+                console.log('Mock: Updated user:', updatedUser);
+                return updatedUser;
+            } else if (method === 'GET') {
+                if (endpoint.includes('/users/')) {
+                    // Get single user
+                    return {
+                        id: 1,
+                        name: 'Demo User',
+                        email: 'demo@strivehive.app',
+                        age: 30,
+                        gender: 'other',
+                        height: 175,
+                        weight: 70,
+                        activityLevel: 'moderately_active',
+                        fitnessGoal: 'maintain',
+                        createdDate: new Date().toISOString()
+                    };
+                } else {
+                    // Get all users
+                    return [];
+                }
+            }
+        }
+        
+        // Handle activity endpoints
+        if (endpoint.startsWith('/activities')) {
+            if (method === 'POST') {
+                return { 
+                    id: Date.now(), 
+                    ...body,
+                    recordedAt: new Date().toISOString() 
+                };
+            } else {
+                return [];
+            }
+        }
+        
+        // Handle nutrition endpoints
+        if (endpoint.startsWith('/nutrition')) {
+            if (method === 'POST') {
+                return { 
+                    id: Date.now(), 
+                    ...body,
+                    recordedAt: new Date().toISOString() 
+                };
+            } else {
+                return [];
+            }
+        }
+        
+        // Default fallback
+        return method === 'POST' || method === 'PUT' ? { id: Date.now(), ...body } : [];
     }
 
     // User API methods
