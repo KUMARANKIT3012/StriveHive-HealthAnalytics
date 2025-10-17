@@ -2611,16 +2611,68 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Nav menu:', navMenu);
         
         if (navbar) {
-            // Force make navbar visible
-            navbar.style.display = 'block';
-            navbar.style.visibility = 'visible';
-            navbar.style.opacity = '1';
-            navbar.style.position = 'fixed';
-            navbar.style.top = '0';
-            navbar.style.zIndex = '9999';
-            navbar.style.background = 'rgba(255, 255, 255, 0.95)';
-            navbar.style.width = '100%';
-            console.log('✅ Applied force-visible styles to navbar');
+            // Force make navbar visible with enhanced positioning
+            navbar.style.cssText = `
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                z-index: 99999 !important;
+                background: rgba(255, 255, 255, 0.95) !important;
+                backdrop-filter: blur(20px) !important;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+                box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1) !important;
+                padding: 0 20px !important;
+                min-height: 80px !important;
+                transform: none !important;
+                margin: 0 !important;
+            `;
+            
+            // Also ensure nav container is visible
+            if (navContainer) {
+                navContainer.style.cssText = `
+                    display: flex !important;
+                    justify-content: space-between !important;
+                    align-items: center !important;
+                    max-width: 1400px !important;
+                    margin: 0 auto !important;
+                    padding: 20px 0 !important;
+                    width: 100% !important;
+                `;
+            }
+            
+            // Make nav menu visible on desktop
+            if (navMenu) {
+                navMenu.style.cssText = `
+                    display: flex !important;
+                    list-style: none !important;
+                    gap: 30px !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    transform: none !important;
+                    position: static !important;
+                    background: none !important;
+                    height: auto !important;
+                `;
+            }
+            
+            console.log('✅ Applied enhanced force-visible styles to navbar');
+            
+            // Ensure main content isn't hidden behind navbar
+            const mainContent = document.querySelector('.main-content') || document.querySelector('main');
+            if (mainContent) {
+                mainContent.style.paddingTop = '100px';
+                mainContent.style.marginTop = '0';
+                console.log('✅ Added top padding to main content');
+            }
+            
+            // Force body to not hide navbar
+            document.body.style.paddingTop = '0';
+            document.body.style.marginTop = '0';
         }
     }, 100);
     
